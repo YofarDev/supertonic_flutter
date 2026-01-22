@@ -1,4 +1,4 @@
-package com.example.supertonic_flutter
+package fr.yofardev.supertonic_flutter
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall

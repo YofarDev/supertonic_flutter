@@ -1,4 +1,4 @@
-# Supertonic Flutter
+# Supertonic TTS Flutter
 
 High-quality multilingual text-to-speech (TTS) engine for Flutter applications. Powered by ONNX Runtime for fast, local neural speech synthesis.
 
@@ -153,8 +153,7 @@ end
 
 ## Demo
 
-  <img src="example/screen.png" alt="Supertonic Flutter Demo" width="300"/>
-
+<img src="example/screen.png" alt="Supertonic Flutter Demo" width="300"/>
 
 > Check out the `example/` directory for a full-featured demo app with language selection, voice switching, and customizable settings.
 
