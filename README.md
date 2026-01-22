@@ -65,7 +65,7 @@ flutter:
 
 This package uses `flutter_onnxruntime` which requires specific platform configurations:
 
-#### Android
+#### ➡️ Android
 
 Add ProGuard rules to prevent ONNX Runtime classes from being obfuscated.
 
@@ -83,7 +83,7 @@ echo "-keep class ai.onnxruntime.** { *; }" > android/app/proguard-rules.pro
 
 For more information, refer to the [flutter_onnxruntime troubleshooting guide](https://github.com/innovation-engineering/flutter_onnxruntime/blob/main/README.md#troubleshooting).
 
-#### iOS
+#### ➡️ iOS
 
 ONNX Runtime requires minimum version iOS 16 and static linkage.
 
@@ -114,7 +114,7 @@ post_install do |installer|
 end
 ```
 
-#### macOS
+#### ➡️ macOS
 
 macOS build requires minimum version macOS 14.
 
@@ -153,7 +153,7 @@ end
 
 ## Demo
 
-<img src="example/screen.png" alt="Supertonic Flutter Demo" width="300"/>
+<img src="https://github.com/YofarDev/supertonic_flutter/blob/main/example/screen.png?raw=true" alt="Supertonic Flutter Demo" width="300"/>
 
 > Check out the `example/` directory for a full-featured demo app with language selection, voice switching, and customizable settings.
 
