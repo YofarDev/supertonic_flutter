@@ -27,7 +27,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  supertonic_flutter: ^0.1.0
+  supertonic_flutter: ^0.1.1
 ```
 
 ## Setup
@@ -205,7 +205,3 @@ final result = await tts.synthesize(
 
 await player.play(result);
 ```
-
-## License
-
-See LICENSE file for details.

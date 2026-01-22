@@ -1,3 +1,7 @@
+## 0.1.1
+
+- Minor README improvements
+
 ## 0.1.0
 
 - Initial release of supertonic_flutter
