@@ -1,0 +1,36 @@
+name: supertonic_flutter
+description: High-quality multilingual text-to-speech engine for Flutter. Supports English, Korean, Spanish, Portuguese, and French with multiple voice styles.
+version: 0.1.0
+homepage: https://github.com/supertonic/supertonic_flutter
+repository: https://github.com/supertonic/supertonic_flutter
+issue_tracker: https://github.com/supertonic/supertonic_flutter/issues
+
+environment:
+  sdk: ^3.5.0
+  flutter: '>=3.24.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  plugin_platform_interface: ^2.1.0
+  flutter_onnxruntime: ^1.6.0
+  just_audio: ^0.10.5
+  path_provider: ^2.1.1
+  logger: ^2.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+# The following section is specific to Flutter plugins.
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.example.supertonic_flutter
+        pluginClass: SupertonicFlutterPlugin
+      ios:
+        pluginClass: SupertonicFlutterPlugin
+      macos:
+        pluginClass: SupertonicFlutterPlugin

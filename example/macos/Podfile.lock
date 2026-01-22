@@ -1,0 +1,54 @@
+PODS:
+  - audio_session (0.0.1):
+    - FlutterMacOS
+  - flutter_onnxruntime (0.0.1):
+    - FlutterMacOS
+    - onnxruntime-objc (= 1.21.0)
+  - FlutterMacOS (1.0.0)
+  - just_audio (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - onnxruntime-c (1.21.0)
+  - onnxruntime-objc (1.21.0):
+    - onnxruntime-objc/Core (= 1.21.0)
+  - onnxruntime-objc/Core (1.21.0):
+    - onnxruntime-c (= 1.21.0)
+  - supertonic_flutter (0.0.1):
+    - FlutterMacOS
+
+DEPENDENCIES:
+  - audio_session (from `Flutter/ephemeral/.symlinks/plugins/audio_session/macos`)
+  - flutter_onnxruntime (from `Flutter/ephemeral/.symlinks/plugins/flutter_onnxruntime/macos`)
+  - FlutterMacOS (from `Flutter/ephemeral`)
+  - just_audio (from `Flutter/ephemeral/.symlinks/plugins/just_audio/darwin`)
+  - supertonic_flutter (from `Flutter/ephemeral/.symlinks/plugins/supertonic_flutter/macos`)
+
+SPEC REPOS:
+  trunk:
+    - onnxruntime-c
+    - onnxruntime-objc
+
+EXTERNAL SOURCES:
+  audio_session:
+    :path: Flutter/ephemeral/.symlinks/plugins/audio_session/macos
+  flutter_onnxruntime:
+    :path: Flutter/ephemeral/.symlinks/plugins/flutter_onnxruntime/macos
+  FlutterMacOS:
+    :path: Flutter/ephemeral
+  just_audio:
+    :path: Flutter/ephemeral/.symlinks/plugins/just_audio/darwin
+  supertonic_flutter:
+    :path: Flutter/ephemeral/.symlinks/plugins/supertonic_flutter/macos
+
+SPEC CHECKSUMS:
+  audio_session: 728ae3823d914f809c485d390274861a24b0904e
+  flutter_onnxruntime: e6887abc1032d3e5c92f84b912ad42c33e9ce1c9
+  FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
+  just_audio: a42c63806f16995daf5b219ae1d679deb76e6a79
+  onnxruntime-c: ac65025f01072d25d7d394a2b43ac30d9397b260
+  onnxruntime-objc: 5fa03134356d47b642ec85b1023d9907a123d201
+  supertonic_flutter: f54a197dc675f78077d568204974ba2ec0e862e1
+
+PODFILE CHECKSUM: 9b5963640228ab6a852dda556c9727d284cc3048
+
+COCOAPODS: 1.16.2
