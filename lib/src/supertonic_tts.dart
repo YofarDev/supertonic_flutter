@@ -253,7 +253,39 @@ class _Style {
   _Style(this.ttl, this.dp, this.ttlShape, this.dpShape);
 }
 
-/// Main Supertonic TTS engine
+/// Main Supertonic TTS engine for high-quality neural text-to-speech synthesis.
+///
+/// This class provides the core functionality for converting text to speech
+/// using ONNX Runtime for fast, local inference. Supports multiple languages
+/// and voice styles with customizable quality settings.
+///
+/// Example:
+/// ```dart
+/// final tts = SupertonicTTS();
+///
+/// // Initialize the engine
+/// await tts.initialize();
+///
+/// // Synthesize speech
+/// final result = await tts.synthesize(
+///   'Hello, world!',
+///   language: 'en',
+///   voiceStyle: 'M1',
+/// );
+///
+/// // Use the result
+/// final wavBytes = result.toWavBytes();
+/// await File('output.wav').writeAsBytes(wavBytes);
+///
+/// // Clean up when done
+/// tts.dispose();
+/// ```
+///
+/// See also:
+/// - [TTSConfig] for configuration options
+/// - [TTSAudioPlayer] for playing synthesized audio
+/// - [TTSVoiceStyle] for available voice styles
+/// - [TTSLanguage] for supported languages
 class SupertonicTTS {
   _UnicodeProcessor? _textProcessor;
   OrtSession? _dpOrt, _textEncOrt, _vectorEstOrt, _vocoderOrt;
@@ -261,15 +293,77 @@ class SupertonicTTS {
 
   final Map<String, _Style> _styleCache = {};
 
+  /// The audio sample rate in Hz (typically 24000).
+  ///
+  /// This is used when encoding the output audio data.
   int get sampleRate => _cfgs?['ae']?['sample_rate'] ?? 24000;
+
+  /// The base chunk size for audio processing (typically 512).
+  ///
+  /// This affects how the audio is processed internally.
   int get baseChunkSize => _cfgs?['ae']?['base_chunk_size'] ?? 512;
+
+  /// The chunk compression factor (typically 2).
+  ///
+  /// Used for internal audio processing calculations.
   int get chunkCompressFactor => _cfgs?['ttl']?['chunk_compress_factor'] ?? 2;
+
+  /// The latent dimension (typically 512).
+  ///
+  /// Used for internal model processing.
   int get ldim => _cfgs?['ttl']?['latent_dim'] ?? 512;
 
   bool _isInitialized = false;
+
+  /// Whether the TTS engine has been initialized.
+  ///
+  /// Returns `true` if [initialize] has been successfully called.
+  ///
+  /// Example:
+  /// ```dart
+  /// if (!tts.isInitialized) {
+  ///   await tts.initialize();
+  /// }
+  /// ```
   bool get isInitialized => _isInitialized;
 
-  /// Initialize the TTS engine
+  /// Initializes the TTS engine and loads ONNX models.
+  ///
+  /// Must be called before any synthesis operations. This method loads the
+  /// necessary ONNX models, configuration files, and text processors.
+  ///
+  /// The [onnxDir] parameter specifies the directory containing ONNX model files:
+  /// - duration_predictor.onnx
+  /// - text_encoder.onnx
+  /// - vector_estimator.onnx
+  /// - vocoder.onnx
+  /// - tts.json
+  /// - unicode_indexer.json
+  ///
+  /// The [voiceStylesDir] parameter specifies the directory containing voice style
+  /// JSON files (M1.json, M2.json, etc.).
+  ///
+  /// Example:
+  /// ```dart
+  /// final tts = SupertonicTTS();
+  ///
+  /// // Initialize with default paths
+  /// await tts.initialize();
+  ///
+  /// // Or specify custom paths
+  /// await tts.initialize(
+  ///   onnxDir: 'custom/path/to/onnx',
+  ///   voiceStylesDir: 'custom/path/to/voices',
+  /// );
+  /// ```
+  ///
+  /// Throws:
+  /// - [StateError] if already initialized
+  /// - [Exception] if model files are missing or invalid
+  ///
+  /// See also:
+  /// - [synthesize] for generating speech
+  /// - [dispose] for cleaning up resources
   Future<void> initialize({
     String onnxDir = 'assets/onnx',
     String voiceStylesDir = 'assets/voice_styles',
@@ -292,7 +386,68 @@ class SupertonicTTS {
     _logger.i('SupertonicTTS initialized successfully');
   }
 
-  /// Synthesize speech from text
+  /// Synthesizes speech from the given text.
+  ///
+  /// Converts the provided [text] into audio using the specified [language] and
+  /// [voiceStyle]. The [config] parameter allows customization of quality and speed.
+  ///
+  /// The [text] parameter can be any length. Long text is automatically chunked
+  /// and synthesized in segments with optional silence between chunks.
+  ///
+  /// The [language] parameter must be one of the supported language codes:
+  /// - 'en' - English
+  /// - 'ko' - Korean
+  /// - 'es' - Spanish
+  /// - 'pt' - Portuguese
+  /// - 'fr' - French
+  ///
+  /// The [voiceStyle] parameter selects one of the 10 available voices:
+  /// - Male: 'M1', 'M2', 'M3', 'M4', 'M5'
+  /// - Female: 'F1', 'F2', 'F3', 'F4', 'F5'
+  ///
+  /// The [config] parameter is optional. If not provided, default settings are used.
+  /// See [TTSConfig] for available options.
+  ///
+  /// Example:
+  /// ```dart
+  /// // Basic synthesis
+  /// final result = await tts.synthesize(
+  ///   'Hello, world!',
+  ///   language: 'en',
+  ///   voiceStyle: 'M1',
+  /// );
+  ///
+  /// // With custom configuration
+  /// final result = await tts.synthesize(
+  ///   'This is a longer text that will be split into chunks.',
+  ///   language: 'en',
+  ///   voiceStyle: 'F3',
+  ///   config: TTSConfig(
+  ///     speechSpeed: 1.2,
+  ///     denoisingSteps: 8,
+  ///     silenceDuration: 0.5,
+  ///   ),
+  /// );
+  ///
+  /// // Use the result
+  /// await player.play(result);
+  /// // Or save to file
+  /// final wavBytes = result.toWavBytes();
+  /// await File('output.wav').writeAsBytes(wavBytes);
+  /// ```
+  ///
+  /// Returns a [TTSResult] containing the synthesized audio data, sample rate,
+  /// and duration.
+  ///
+  /// Throws:
+  /// - [StateError] if the engine is not initialized (call [initialize] first)
+  /// - [Exception] if synthesis fails due to invalid input or model errors
+  ///
+  /// See also:
+  /// - [TTSConfig] for configuration options
+  /// - [TTSVoiceStyle] for voice descriptions
+  /// - [TTSLanguage] for supported languages
+  /// - [TTSAudioPlayer.play] for playing the result
   Future<TTSResult> synthesize(
     String text, {
     String language = 'en',
@@ -640,7 +795,28 @@ class SupertonicTTS {
     return [list is num ? list.toDouble() : double.parse(list.toString())];
   }
 
-  /// Release resources
+  /// Releases all resources and resets the TTS engine.
+  ///
+  /// Call this method when you're done using the TTS engine to free up memory
+  /// and resources. After calling [dispose], you must call [initialize] again
+  /// before using the engine.
+  ///
+  /// Example:
+  /// ```dart
+  /// final tts = SupertonicTTS();
+  /// await tts.initialize();
+  ///
+  /// // Use the TTS engine
+  /// await tts.synthesize('Hello', language: 'en');
+  ///
+  /// // Clean up when done
+  /// tts.dispose();
+  ///
+  /// // Can reinitialize if needed
+  /// await tts.initialize();
+  /// ```
+  ///
+  /// Note: This method is safe to call multiple times.
   void dispose() {
     _dpOrt = null;
     _textEncOrt = null;

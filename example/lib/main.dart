@@ -27,6 +27,7 @@ class _MyAppState extends State<MyApp> {
   String _selectedLang = 'en';
   double _speechSpeed = 1.05;
   int _denoisingSteps = 5;
+  double _silenceDuration = 0.3;
   String? _errorMessage;
 
   final List<String> _availableVoices = [
@@ -111,6 +112,7 @@ class _MyAppState extends State<MyApp> {
       final config = TTSConfig(
         denoisingSteps: _denoisingSteps,
         speechSpeed: _speechSpeed,
+        silenceDuration: _silenceDuration,
       );
 
       debugPrint('Calling tts.synthesize...');
@@ -290,7 +292,7 @@ class _MyAppState extends State<MyApp> {
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      '$_selectedVoice - ${TTSVoiceStyle.fromCode(_selectedVoice).gender} Voice',
+                                      '$_selectedVoice Voice',
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 16,
@@ -367,6 +369,28 @@ class _MyAppState extends State<MyApp> {
                           onChanged: (value) {
                             setState(() {
                               _denoisingSteps = value.toInt();
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Silence duration
+                        Text(
+                          'Silence Duration: ${_silenceDuration.toStringAsFixed(1)}s',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Slider(
+                          value: _silenceDuration,
+                          min: 0.0,
+                          max: 2.0,
+                          divisions: 20,
+                          label: '${_silenceDuration.toStringAsFixed(1)}s',
+                          onChanged: (value) {
+                            setState(() {
+                              _silenceDuration = value;
                             });
                           },
                         ),
