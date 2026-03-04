@@ -1,17 +1,14 @@
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
+
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
-import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
+
 import 'tts_config.dart';
 import 'tts_result.dart';
-
-final _logger = Logger(
-  printer: PrettyPrinter(methodCount: 0, errorMethodCount: 5, lineLength: 80),
-);
 
 // Hangul Jamo constants for NFKD decomposition
 const int _hangulSyllableBase = 0xAC00;
@@ -370,8 +367,6 @@ class SupertonicTTS {
   }) async {
     if (_isInitialized) return;
 
-    _logger.i('Initializing SupertonicTTS...');
-
     _cfgs = await _loadCfgs(onnxDir);
     final sessions = await _loadOnnxAll(onnxDir);
     _textProcessor =
@@ -383,7 +378,6 @@ class SupertonicTTS {
     _vocoderOrt = sessions['vocoderOrt'];
 
     _isInitialized = true;
-    _logger.i('SupertonicTTS initialized successfully');
   }
 
   /// Synthesizes speech from the given text.
@@ -778,7 +772,6 @@ class SupertonicTTS {
 
     final sessions = await Future.wait(models.map((name) async {
       final path = await _copyModelToFile('$dir/$name.onnx');
-      _logger.d('Loading $name.onnx');
       return ort.createSessionFromAsset(path);
     }));
 
