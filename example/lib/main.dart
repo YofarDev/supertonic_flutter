@@ -1,7 +1,7 @@
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:supertonic_flutter/supertonic_flutter.dart';
 
 void main() {
@@ -60,9 +60,7 @@ class _MyAppState extends State<MyApp> {
     _player.playerStateStream.listen((state) {
       if (!mounted) return;
       setState(() {
-        // Update speaking state based on both playing and processing state
-        _isSpeaking =
-            state.playing && state.processingState != ProcessingState.completed;
+        _isSpeaking = state == PlayerState.playing;
       });
     });
   }

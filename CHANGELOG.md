@@ -1,3 +1,12 @@
+## 0.1.4
+
+- Added Linux desktop support
+- Migrated from just_audio to audioplayers for cross-platform audio playback
+
+## 0.1.3
+
+- Removed verbose logs at init
+
 ## 0.1.2
 
 - Added comprehensive inline documentation for all public APIs

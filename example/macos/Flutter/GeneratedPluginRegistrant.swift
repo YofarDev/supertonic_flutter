@@ -5,14 +5,12 @@
 import FlutterMacOS
 import Foundation
 
-import audio_session
+import audioplayers_darwin
 import flutter_onnxruntime
-import just_audio
 import supertonic_flutter
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
-  AudioSessionPlugin.register(with: registry.registrar(forPlugin: "AudioSessionPlugin"))
+  AudioplayersDarwinPlugin.register(with: registry.registrar(forPlugin: "AudioplayersDarwinPlugin"))
   FlutterOnnxruntimePlugin.register(with: registry.registrar(forPlugin: "FlutterOnnxruntimePlugin"))
-  JustAudioPlugin.register(with: registry.registrar(forPlugin: "JustAudioPlugin"))
   SupertonicFlutterPlugin.register(with: registry.registrar(forPlugin: "SupertonicFlutterPlugin"))
 }

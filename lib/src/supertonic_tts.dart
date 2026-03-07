@@ -772,7 +772,7 @@ class SupertonicTTS {
 
     final sessions = await Future.wait(models.map((name) async {
       final path = await _copyModelToFile('$dir/$name.onnx');
-      return ort.createSessionFromAsset(path);
+      return ort.createSession(path);
     }));
 
     return {

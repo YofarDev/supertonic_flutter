@@ -1,11 +1,11 @@
 import 'dart:io';
-import 'package:just_audio/just_audio.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'tts_result.dart';
 import 'package:path_provider/path_provider.dart';
 
 /// Audio player for playing TTS results.
 ///
-/// This class wraps the `just_audio` package to provide convenient playback
+/// This class wraps the `audioplayers` package to provide convenient playback
 /// of [TTSResult] objects. It handles temporary file creation and cleanup
 /// automatically.
 ///
@@ -28,7 +28,7 @@ import 'package:path_provider/path_provider.dart';
 ///
 /// // Monitor state
 /// player.playerStateStream.listen((state) {
-///   print('Playing: \${state.playing}');
+///   print('Playing: ${state == PlayerState.playing}');
 /// });
 ///
 /// // Clean up
@@ -73,9 +73,7 @@ class TTSAudioPlayer {
     await file.writeAsBytes(result.toWavBytes());
 
     // Play the file
-    final uri = Uri.file(filePath);
-    await _player.setAudioSource(AudioSource.uri(uri));
-    await _player.play();
+    await _player.play(DeviceFileSource(filePath));
   }
 
   /// Stops playback and resets the player to the beginning.
@@ -118,7 +116,7 @@ class TTSAudioPlayer {
   /// Note: If the player is not paused, this starts playback from the beginning.
   Future<void> resume() async {
     if (_isDisposed) return;
-    await _player.play();
+    await _player.resume();
   }
 
   /// Gets the current player state.
@@ -129,13 +127,13 @@ class TTSAudioPlayer {
   /// Example:
   /// ```dart
   /// final state = player.playerState;
-  /// if (state.playing) {
+  /// if (state == PlayerState.playing) {
   ///   print('Audio is playing');
   /// }
   /// ```
   ///
   /// For monitoring state changes, use [playerStateStream] instead.
-  PlayerState get playerState => _player.playerState;
+  PlayerState get playerState => _player.state;
 
   /// Stream of player state changes.
   ///
@@ -145,16 +143,16 @@ class TTSAudioPlayer {
   /// Example:
   /// ```dart
   /// player.playerStateStream.listen((state) {
-  ///   if (state.playing) {
+  ///   if (state == PlayerState.playing) {
   ///     print('Now playing');
-  ///   } else if (state.processingState == ProcessingState.completed) {
+  ///   } else if (state == PlayerState.completed) {
   ///     print('Finished playing');
   ///   }
   /// });
   /// ```
   ///
   /// Note: Remember to cancel the subscription when done to avoid memory leaks.
-  Stream<PlayerState> get playerStateStream => _player.playerStateStream;
+  Stream<PlayerState> get playerStateStream => _player.onPlayerStateChanged;
 
   /// Whether audio is currently playing.
   ///
@@ -168,7 +166,7 @@ class TTSAudioPlayer {
   /// ```
   ///
   /// For more detailed state information, use [playerState].
-  bool get isPlaying => _player.playing;
+  bool get isPlaying => _player.state == PlayerState.playing;
 
   /// Releases all resources and stops playback.
   ///
