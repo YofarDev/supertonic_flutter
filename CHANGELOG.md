@@ -1,3 +1,12 @@
+## 0.1.5
+
+- Added Web platform support
+- Added web plugin registration (`SupertonicFlutterWebPlugin`)
+- Reworked ONNX model loading to use asset-based session creation across platforms
+- Added Web setup instructions for loading `onnxruntime-web` in `web/index.html`
+- Fixed Web TTS inference for `tensor(int64)` model inputs
+- Updated audio playback to in-memory byte source for better cross-platform compatibility
+
 ## 0.1.4
 
 - Added Linux desktop support

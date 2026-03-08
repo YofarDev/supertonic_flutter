@@ -10,7 +10,7 @@ High-quality multilingual text-to-speech (TTS) engine for Flutter applications. 
 - 🎭 **Multiple Voice Styles** - 10 unique voices (5 male, 5 female) with different characteristics
 - ⚡ **Local Processing** - All inference happens on-device, no server calls required
 - 🎛️ **Customizable** - Adjustable speech speed and quality settings
-- 📱 **Cross-Platform** - Supports Android, iOS, and macOS
+- 📱 **Cross-Platform** - Supports Android, iOS, macOS, Linux, and Web
 - 🔊 **High Quality** - Neural TTS powered by advanced diffusion models
 
 ## Platform Support
@@ -20,6 +20,18 @@ High-quality multilingual text-to-speech (TTS) engine for Flutter applications. 
 | Android  | ✅ Supported | API 21+ (Android 5.0) |
 | iOS      | ✅ Supported | iOS 16.0+             |
 | macOS    | ✅ Supported | macOS 14.0+           |
+| Linux    | ✅ Supported | Ubuntu 20.04+         |
+| Web      | ✅ Supported | Modern browsers       |
+
+### Web Setup
+
+For Web builds, `flutter_onnxruntime` requires ONNX Runtime Web to be loaded in
+your app's `web/index.html` before `flutter_bootstrap.js`:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.min.js"></script>
+<script src="flutter_bootstrap.js" async></script>
+```
 
 ## Installation
 
@@ -27,7 +39,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  supertonic_flutter: ^0.1.1
+  supertonic_flutter: ^0.1.5
 ```
 
 ## Setup

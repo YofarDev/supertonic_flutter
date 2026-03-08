@@ -1,7 +1,5 @@
-import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
 import 'tts_result.dart';
-import 'package:path_provider/path_provider.dart';
 
 /// Audio player for playing TTS results.
 ///
@@ -63,17 +61,8 @@ class TTSAudioPlayer {
       throw StateError('TTSAudioPlayer has been disposed');
     }
 
-    // Create a temporary file for the audio
-    final tempDir = await getTemporaryDirectory();
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final filePath = '${tempDir.path}/supertonic_tts_$timestamp.wav';
-
-    // Write WAV file
-    final file = File(filePath);
-    await file.writeAsBytes(result.toWavBytes());
-
-    // Play the file
-    await _player.play(DeviceFileSource(filePath));
+    // Keep playback in-memory so it works across native and web platforms.
+    await _player.play(BytesSource(result.toWavBytes()));
   }
 
   /// Stops playback and resets the player to the beginning.

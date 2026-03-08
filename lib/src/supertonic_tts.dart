@@ -1,12 +1,13 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
-import 'package:path_provider/path_provider.dart';
 
+import 'int64_tensor_helper_stub.dart'
+    if (dart.library.js_interop) 'int64_tensor_helper_web.dart'
+    as int64_tensor_helper;
 import 'tts_config.dart';
 import 'tts_result.dart';
 
@@ -198,11 +199,7 @@ class _UnicodeProcessor {
   _UnicodeProcessor._(this.indexer);
 
   static Future<_UnicodeProcessor> load(String path) async {
-    final json = jsonDecode(
-      path.startsWith('assets/')
-          ? await rootBundle.loadString(path)
-          : File(path).readAsStringSync(),
-    );
+    final json = jsonDecode(await rootBundle.loadString(path));
 
     final indexer = json is List
         ? {
@@ -740,25 +737,13 @@ class SupertonicTTS {
 
   Future<OrtValue> _intToTensor(List<List<int>> array, List<int> dims) async {
     final flat = array.expand((row) => row).toList();
-    return await OrtValue.fromList(Int64List.fromList(flat), dims);
+    return int64_tensor_helper.createInt64Tensor(flat, dims);
   }
 
   Future<Map<String, dynamic>> _loadCfgs(String onnxDir) async {
     final path = '$onnxDir/tts.json';
     final json = jsonDecode(await rootBundle.loadString(path));
     return json as Map<String, dynamic>;
-  }
-
-  Future<String> _copyModelToFile(String path) async {
-    final byteData = await rootBundle.load(path);
-    final tempDir = await getApplicationCacheDirectory();
-    final modelPath = '${tempDir.path}/${path.split("/").last}';
-
-    final file = File(modelPath);
-    if (!file.existsSync()) {
-      await file.writeAsBytes(byteData.buffer.asUint8List());
-    }
-    return modelPath;
   }
 
   Future<Map<String, OrtSession>> _loadOnnxAll(String dir) async {
@@ -771,8 +756,7 @@ class SupertonicTTS {
     ];
 
     final sessions = await Future.wait(models.map((name) async {
-      final path = await _copyModelToFile('$dir/$name.onnx');
-      return ort.createSession(path);
+      return ort.createSessionFromAsset('$dir/$name.onnx');
     }));
 
     return {
