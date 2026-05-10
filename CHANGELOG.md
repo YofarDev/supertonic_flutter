@@ -1,3 +1,12 @@
+## 1.0.0
+
+- Auto-download model files from HuggingFace when not bundled as assets
+- Three-strategy model loading: local cache → bundled Flutter assets → network download
+- Added `SupertonicTTS.preDownloadModels()` for explicit model pre-downloading with progress callback
+- Added `SupertonicTTS.modelsReady()` to check if models are available locally
+- Added `DownloadProgressCallback` typedef for download progress reporting
+- Bundled assets still supported — no code changes needed for existing setups
+
 ## 0.1.5
 
 - Added Web platform support

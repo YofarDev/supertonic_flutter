@@ -30,6 +30,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   logger: ^2.0.2
   audioplayers: ^6.6.0
+  path_provider: ^2.1.5
 
 dev_dependencies:
   integration_test:

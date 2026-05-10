@@ -39,16 +39,36 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  supertonic_flutter: ^0.1.5
+  supertonic_flutter: ^1.0.0
 ```
 
 ## Setup
 
-### 1. Add Assets
+### Option A: Auto-Download (Recommended)
 
-Add the ONNX model files and voice styles to your app's assets directory:
+No manual setup required. Models are automatically downloaded from [Hugging Face](https://huggingface.co/Supertone/supertonic-2) on first use (~268 MB).
 
-> **Note:** Model files are not included in the package due to their size. Download them from [Hugging Face](https://huggingface.co/Supertone/supertonic-2) and add them to your app.
+```dart
+// Just initialize — models download automatically if not found
+final tts = SupertonicTTS();
+await tts.initialize();
+```
+
+To pre-download at a convenient time:
+
+```dart
+if (!await SupertonicTTS.modelsReady()) {
+  await SupertonicTTS.preDownloadModels(
+    onProgress: (done, total, file, progress) {
+      print('[$done/$total] $file: ${(progress * 100).toInt()}%');
+    },
+  );
+}
+```
+
+### Option B: Bundle Assets Manually
+
+Download model files from [Hugging Face](https://huggingface.co/Supertone/supertonic-2) and add them to your app's assets directory. This avoids runtime downloads but increases app size by ~268 MB.
 
 ```
 assets/
@@ -64,7 +84,7 @@ assets/
     └── F1.json, F2.json, F3.json, F4.json, F5.json
 ```
 
-### 2. Update pubspec.yaml
+Update `pubspec.yaml`:
 
 ```yaml
 flutter:
@@ -73,7 +93,7 @@ flutter:
     - assets/voice_styles/
 ```
 
-### 3. Platform Configuration
+### Platform Configuration
 
 This package uses `flutter_onnxruntime` which requires specific platform configurations:
 

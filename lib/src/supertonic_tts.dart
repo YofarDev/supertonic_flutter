@@ -1,15 +1,40 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
 
 import 'int64_tensor_helper_stub.dart'
     if (dart.library.js_interop) 'int64_tensor_helper_web.dart'
     as int64_tensor_helper;
+import 'model_downloader.dart';
 import 'tts_config.dart';
 import 'tts_result.dart';
+
+const List<String> _onnxAssetPaths = [
+  'duration_predictor.onnx',
+  'text_encoder.onnx',
+  'vector_estimator.onnx',
+  'vocoder.onnx',
+  'tts.json',
+  'unicode_indexer.json',
+];
+
+const List<String> _voiceStyleAssetPaths = [
+  'F1.json',
+  'F2.json',
+  'F3.json',
+  'F4.json',
+  'F5.json',
+  'M1.json',
+  'M2.json',
+  'M3.json',
+  'M4.json',
+  'M5.json',
+];
 
 // Hangul Jamo constants for NFKD decomposition
 const int _hangulSyllableBase = 0xAC00;
@@ -285,6 +310,8 @@ class SupertonicTTS {
   OrtSession? _dpOrt, _textEncOrt, _vectorEstOrt, _vocoderOrt;
   Map<String, dynamic>? _cfgs;
 
+  String? _voiceStylesDir;
+
   final Map<String, _Style> _styleCache = {};
 
   /// The audio sample rate in Hz (typically 24000).
@@ -326,29 +353,19 @@ class SupertonicTTS {
   /// Must be called before any synthesis operations. This method loads the
   /// necessary ONNX models, configuration files, and text processors.
   ///
-  /// The [onnxDir] parameter specifies the directory containing ONNX model files:
-  /// - duration_predictor.onnx
-  /// - text_encoder.onnx
-  /// - vector_estimator.onnx
-  /// - vocoder.onnx
-  /// - tts.json
-  /// - unicode_indexer.json
+  /// On first call the engine tries three strategies in order:
+  /// 1. **Cached models** — if a previous run already downloaded or copied
+  ///    models to the application support directory they are loaded directly.
+  /// 2. **Bundled assets** — if the app was built with `supertonic_flutter`
+  ///    assets bundled, they are copied to the cache and loaded from there.
+  /// 3. **Download** — models are fetched from Hugging Face into the cache.
   ///
-  /// The [voiceStylesDir] parameter specifies the directory containing voice style
-  /// JSON files (M1.json, M2.json, etc.).
+  /// Subsequent calls are no-ops as long as the engine is still initialized.
   ///
   /// Example:
   /// ```dart
   /// final tts = SupertonicTTS();
-  ///
-  /// // Initialize with default paths
   /// await tts.initialize();
-  ///
-  /// // Or specify custom paths
-  /// await tts.initialize(
-  ///   onnxDir: 'custom/path/to/onnx',
-  ///   voiceStylesDir: 'custom/path/to/voices',
-  /// );
   /// ```
   ///
   /// Throws:
@@ -358,22 +375,51 @@ class SupertonicTTS {
   /// See also:
   /// - [synthesize] for generating speech
   /// - [dispose] for cleaning up resources
+  /// - [preDownloadModels] for pre-fetching models before calling initialize
+  /// - [modelsReady] for checking if models are available
   Future<void> initialize({
     String onnxDir = 'assets/onnx',
     String voiceStylesDir = 'assets/voice_styles',
   }) async {
     if (_isInitialized) return;
 
-    _cfgs = await _loadCfgs(onnxDir);
-    final sessions = await _loadOnnxAll(onnxDir);
-    _textProcessor =
-        await _UnicodeProcessor.load('$onnxDir/unicode_indexer.json');
+    final downloader = ModelDownloader.instance;
 
-    _dpOrt = sessions['dpOrt'];
-    _textEncOrt = sessions['textEncOrt'];
-    _vectorEstOrt = sessions['vectorEstOrt'];
-    _vocoderOrt = sessions['vocoderOrt'];
+    if (await downloader.allFilesExist()) {
+      final onnxPath = await downloader.onnxDir;
+      _cfgs = await _loadCfgsFromFile(onnxPath);
+      final sessions = await _loadOnnxAllFromFiles(onnxPath);
+      _assignSessions(sessions);
+      _textProcessor = await _UnicodeProcessor.load(
+        '$onnxPath/unicode_indexer.json',
+      );
+    } else if (await ModelDownloader.assetsExist()) {
+      final onnxPath = await downloader.onnxDir;
+      final voiceStylesPath = await downloader.voiceStylesDir;
+      await _copyAssetsToCache(
+        assetOnnxDir: onnxDir,
+        assetVoiceStylesDir: voiceStylesDir,
+        destOnnxDir: onnxPath,
+        destVoiceStylesDir: voiceStylesPath,
+      );
+      _cfgs = await _loadCfgsFromFile(onnxPath);
+      final sessions = await _loadOnnxAllFromFiles(onnxPath);
+      _assignSessions(sessions);
+      _textProcessor = await _UnicodeProcessor.load(
+        '$onnxPath/unicode_indexer.json',
+      );
+    } else {
+      await downloader.downloadAll();
+      final onnxPath = await downloader.onnxDir;
+      _cfgs = await _loadCfgsFromFile(onnxPath);
+      final sessions = await _loadOnnxAllFromFiles(onnxPath);
+      _assignSessions(sessions);
+      _textProcessor = await _UnicodeProcessor.load(
+        '$onnxPath/unicode_indexer.json',
+      );
+    }
 
+    _voiceStylesDir = await downloader.voiceStylesDir;
     _isInitialized = true;
   }
 
@@ -497,8 +543,17 @@ class SupertonicTTS {
       return _styleCache[voiceStyle]!;
     }
 
-    final path = 'assets/voice_styles/$voiceStyle.json';
-    final json = jsonDecode(await rootBundle.loadString(path));
+    final String path;
+    final String jsonStr;
+    if (_voiceStylesDir != null) {
+      path = '$_voiceStylesDir/$voiceStyle.json';
+      jsonStr = await File(path).readAsString();
+    } else {
+      path = 'assets/voice_styles/$voiceStyle.json';
+      jsonStr = await rootBundle.loadString(path);
+    }
+
+    final json = jsonDecode(jsonStr);
 
     final ttlDims = List<int>.from(json['style_ttl']['dims']);
     final dpDims = List<int>.from(json['style_dp']['dims']);
@@ -740,24 +795,31 @@ class SupertonicTTS {
     return int64_tensor_helper.createInt64Tensor(flat, dims);
   }
 
-  Future<Map<String, dynamic>> _loadCfgs(String onnxDir) async {
-    final path = '$onnxDir/tts.json';
-    final json = jsonDecode(await rootBundle.loadString(path));
+  void _assignSessions(Map<String, OrtSession> sessions) {
+    _dpOrt = sessions['dpOrt'];
+    _textEncOrt = sessions['textEncOrt'];
+    _vectorEstOrt = sessions['vectorEstOrt'];
+    _vocoderOrt = sessions['vocoderOrt'];
+  }
+
+  Future<Map<String, dynamic>> _loadCfgsFromFile(String dir) async {
+    final file = File('$dir/tts.json');
+    final json = jsonDecode(await file.readAsString());
     return json as Map<String, dynamic>;
   }
 
-  Future<Map<String, OrtSession>> _loadOnnxAll(String dir) async {
+  Future<Map<String, OrtSession>> _loadOnnxAllFromFiles(String dir) async {
     final ort = OnnxRuntime();
     final models = [
       'duration_predictor',
       'text_encoder',
       'vector_estimator',
-      'vocoder'
+      'vocoder',
     ];
 
-    final sessions = await Future.wait(models.map((name) async {
-      return ort.createSessionFromAsset('$dir/$name.onnx');
-    }));
+    final sessions = await Future.wait(
+      models.map((name) => ort.createSession('$dir/$name.onnx')),
+    );
 
     return {
       'dpOrt': sessions[0],
@@ -765,6 +827,70 @@ class SupertonicTTS {
       'vectorEstOrt': sessions[2],
       'vocoderOrt': sessions[3],
     };
+  }
+
+  Future<void> _copyAssetsToCache({
+    required String assetOnnxDir,
+    required String assetVoiceStylesDir,
+    required String destOnnxDir,
+    required String destVoiceStylesDir,
+  }) async {
+    final allAssetPaths = [
+      ..._onnxAssetPaths.map((p) => ('$assetOnnxDir/$p', destOnnxDir)),
+      ..._voiceStyleAssetPaths
+          .map((p) => ('$assetVoiceStylesDir/$p', destVoiceStylesDir)),
+    ];
+
+    await Future.wait(allAssetPaths.map((entry) async {
+      final assetPath = entry.$1;
+      final destDir = entry.$2;
+      final fileName = assetPath.split('/').last;
+      final byteData = await rootBundle.load(assetPath);
+      final dir = Directory(destDir);
+      if (!dir.existsSync()) {
+        dir.createSync(recursive: true);
+      }
+      final file = File('$destDir/$fileName');
+      if (!file.existsSync()) {
+        await file.writeAsBytes(byteData.buffer.asUint8List());
+      }
+    }));
+  }
+
+  /// Pre-downloads all Supertonic TTS model files from Hugging Face.
+  ///
+  /// Call this before [initialize] to ensure models are available when the
+  /// engine starts.  This is useful when the app is first installed and did
+  /// not bundle model assets.
+  ///
+  /// [onProgress] reports per-file and overall download progress.
+  /// [cancelToken] can be used to cancel the download.
+  ///
+  /// Example:
+  /// ```dart
+  /// await SupertonicTTS.preDownloadModels(
+  ///   onProgress: (done, total, file, progress) {
+  ///     print('$file: ${(progress * 100).toStringAsFixed(0)}%');
+  ///   },
+  /// );
+  /// ```
+  static Future<void> preDownloadModels({
+    DownloadProgressCallback? onProgress,
+    CancelToken? cancelToken,
+  }) {
+    return ModelDownloader.instance.downloadAll(
+      onProgress: onProgress,
+      cancelToken: cancelToken,
+    );
+  }
+
+  /// Returns `true` when models are locally available and ready for
+  /// [initialize] without a network download.
+  ///
+  /// This checks both the model cache directory and the bundled Flutter assets.
+  static Future<bool> modelsReady() async {
+    return await ModelDownloader.instance.allFilesExist() ||
+        await ModelDownloader.assetsExist();
   }
 
   List<double> _flattenToDouble(dynamic list) {
@@ -800,6 +926,7 @@ class SupertonicTTS {
     _vectorEstOrt = null;
     _vocoderOrt = null;
     _styleCache.clear();
+    _voiceStylesDir = null;
     _isInitialized = false;
   }
 }
