@@ -23,6 +23,7 @@ class _MyAppState extends State<MyApp> {
   bool _isInitialized = false;
   bool _isInitializing = false;
   bool _isSpeaking = false;
+  String _initializationStatus = 'Checking model files...';
   String _selectedVoice = 'M1';
   String _selectedLang = 'en';
   double _speechSpeed = 1.05;
@@ -71,9 +72,34 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _isInitializing = true;
       _errorMessage = null;
+      _initializationStatus = 'Checking model files...';
     });
 
     try {
+      final modelsReady = await SupertonicTTS.modelsReady();
+      if (!modelsReady) {
+        setState(() {
+          _initializationStatus = 'Downloading model files (0/16)...';
+        });
+
+        await SupertonicTTS.preDownloadModels(
+          onProgress: (completed, total, file, fileProgress) {
+            if (!mounted) return;
+            final percent = (fileProgress * 100)
+                .clamp(0, 100)
+                .toStringAsFixed(0);
+            setState(() {
+              _initializationStatus =
+                  'Downloading model files (${completed.clamp(0, total)}/$total)\n'
+                  '$file • $percent%';
+            });
+          },
+        );
+      }
+
+      setState(() {
+        _initializationStatus = 'Initializing speech engine...';
+      });
       await _tts.initialize();
       setState(() {
         _isInitialized = true;
@@ -191,7 +217,22 @@ class _MyAppState extends State<MyApp> {
         ),
         body: SafeArea(
           child: _isInitializing
-              ? const Center(child: CircularProgressIndicator())
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CircularProgressIndicator(),
+                        const SizedBox(height: 16),
+                        Text(
+                          _initializationStatus,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                )
               : !_isInitialized
               ? Center(
                   child: SingleChildScrollView(

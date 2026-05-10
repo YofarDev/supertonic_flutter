@@ -224,7 +224,8 @@ class _UnicodeProcessor {
   _UnicodeProcessor._(this.indexer);
 
   static Future<_UnicodeProcessor> load(String path) async {
-    final json = jsonDecode(await rootBundle.loadString(path));
+    final jsonString = await _readJsonString(path);
+    final json = jsonDecode(jsonString);
 
     final indexer = json is List
         ? {
@@ -235,6 +236,14 @@ class _UnicodeProcessor {
             .map((k, v) => MapEntry(int.parse(k), v as int));
 
     return _UnicodeProcessor._(indexer);
+  }
+
+  static Future<String> _readJsonString(String path) async {
+    final file = File(path);
+    if (file.existsSync()) {
+      return file.readAsString();
+    }
+    return rootBundle.loadString(path);
   }
 
   Map<String, dynamic> call(List<String> textList, List<String> langList) {
@@ -385,17 +394,28 @@ class SupertonicTTS {
 
     final downloader = ModelDownloader.instance;
 
+    final onnxPath = await downloader.onnxDir;
+    final voiceStylesPath = await downloader.voiceStylesDir;
+
     if (await downloader.allFilesExist()) {
-      final onnxPath = await downloader.onnxDir;
-      _cfgs = await _loadCfgsFromFile(onnxPath);
-      final sessions = await _loadOnnxAllFromFiles(onnxPath);
-      _assignSessions(sessions);
-      _textProcessor = await _UnicodeProcessor.load(
-        '$onnxPath/unicode_indexer.json',
-      );
+      try {
+        _cfgs = await _loadCfgsFromFile(onnxPath);
+        final sessions = await _loadOnnxAllFromFiles(onnxPath);
+        _assignSessions(sessions);
+        _textProcessor = await _UnicodeProcessor.load(
+          '$onnxPath/unicode_indexer.json',
+        );
+      } catch (_) {
+        await downloader.deleteAll();
+        await downloader.downloadAll();
+        _cfgs = await _loadCfgsFromFile(onnxPath);
+        final sessions = await _loadOnnxAllFromFiles(onnxPath);
+        _assignSessions(sessions);
+        _textProcessor = await _UnicodeProcessor.load(
+          '$onnxPath/unicode_indexer.json',
+        );
+      }
     } else if (await ModelDownloader.assetsExist()) {
-      final onnxPath = await downloader.onnxDir;
-      final voiceStylesPath = await downloader.voiceStylesDir;
       await _copyAssetsToCache(
         assetOnnxDir: onnxDir,
         assetVoiceStylesDir: voiceStylesDir,
@@ -410,7 +430,6 @@ class SupertonicTTS {
       );
     } else {
       await downloader.downloadAll();
-      final onnxPath = await downloader.onnxDir;
       _cfgs = await _loadCfgsFromFile(onnxPath);
       final sessions = await _loadOnnxAllFromFiles(onnxPath);
       _assignSessions(sessions);

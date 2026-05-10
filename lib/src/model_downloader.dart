@@ -58,6 +58,9 @@ class ModelDownloader {
   static final ModelDownloader instance = ModelDownloader._();
 
   static const String _modelDirName = 'supertonic_models';
+  static const Duration _connectTimeout = Duration(seconds: 15);
+  static const Duration _sendTimeout = Duration(seconds: 15);
+  static const Duration _receiveTimeout = Duration(minutes: 5);
 
   Directory? _cachedModelDir;
 
@@ -105,7 +108,13 @@ class ModelDownloader {
     CancelToken? cancelToken,
   }) async {
     final dir = await _modelDir;
-    final dio = Dio();
+    final dio = Dio(
+      BaseOptions(
+        connectTimeout: _connectTimeout,
+        sendTimeout: _sendTimeout,
+        receiveTimeout: _receiveTimeout,
+      ),
+    );
     final total = _allModelFiles.length;
     var completed = 0;
 
@@ -122,18 +131,39 @@ class ModelDownloader {
       }
 
       final url = '$_hfBase/$relative';
-      await dio.download(
-        url,
-        file.path,
-        cancelToken: cancelToken,
-        onReceiveProgress: (received, totalBytes) {
-          final progress = totalBytes > 0 ? received / totalBytes : 0.0;
-          onProgress?.call(completed, total, relative, progress);
-        },
-      );
+      final tmpFile = File('${file.path}.tmp');
+      try {
+        await dio.download(
+          url,
+          tmpFile.path,
+          cancelToken: cancelToken,
+          onReceiveProgress: (received, totalBytes) {
+            final progress = totalBytes > 0 ? received / totalBytes : 0.0;
+            onProgress?.call(completed, total, relative, progress);
+          },
+        );
+        if (!tmpFile.existsSync() || tmpFile.lengthSync() == 0) {
+          throw FileSystemException('Downloaded file is empty', relative);
+        }
+        await tmpFile.rename(file.path);
+      } catch (_) {
+        if (tmpFile.existsSync()) {
+          tmpFile.deleteSync();
+        }
+        rethrow;
+      }
 
       completed++;
       onProgress?.call(completed, total, relative, 1.0);
+    }
+  }
+
+  /// Deletes the entire model cache directory so files will be re-downloaded.
+  Future<void> deleteAll() async {
+    final dir = await _modelDir;
+    if (dir.existsSync()) {
+      dir.deleteSync(recursive: true);
+      dir.createSync(recursive: true);
     }
   }
 
