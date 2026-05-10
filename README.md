@@ -1,17 +1,17 @@
 # Supertonic TTS Flutter
 
-High-quality multilingual text-to-speech (TTS) engine for Flutter applications. Powered by ONNX Runtime for fast, local neural speech synthesis.
+Multilingual text-to-speech (TTS) for Flutter. Powered by ONNX Runtime for fast local inference.
 
 > **Note:** This is an unofficial Flutter port of the [Supertonic](https://github.com/supertone-inc/supertonic) project.
 
 ## Features
 
 - 🌍 **Multilingual Support** - English, Korean, Spanish, Portuguese, and French
-- 🎭 **Multiple Voice Styles** - 10 unique voices (5 male, 5 female) with different characteristics
-- ⚡ **Local Processing** - All inference happens on-device, no server calls required
+- 🎭 **Multiple Voice Styles** - 10 voices (5 male, 5 female)
+- ⚡ **Local Processing** - Runs fully on-device
 - 🎛️ **Customizable** - Adjustable speech speed and quality settings
 - 📱 **Cross-Platform** - Supports Android, iOS, macOS, Linux, and Web
-- 🔊 **High Quality** - Neural TTS powered by advanced diffusion models
+- 🔊 **Neural TTS** - Based on diffusion models
 
 ## Platform Support
 
@@ -35,18 +35,38 @@ your app's `web/index.html` before `flutter_bootstrap.js`:
 
 ## Installation
 
-Add this to your package's `pubspec.yaml` file:
+Add this to `pubspec.yaml`:
 
 ```yaml
 dependencies:
   supertonic_flutter: ^1.0.0
 ```
 
-## Setup
+## Quick Start
+
+```dart
+import 'package:supertonic_flutter/supertonic_flutter.dart';
+
+final tts = SupertonicTTS();
+await tts.initialize();
+
+final result = await tts.synthesize(
+  'Hello, world!',
+  language: 'en',
+  voiceStyle: 'M1',
+);
+```
+
+`initialize()` uses this order:
+- cached models
+- bundled assets
+- download from Hugging Face if needed
+
+## Model Setup
 
 ### Option A: Auto-Download (Recommended)
 
-No manual setup required. Models are automatically downloaded from [Hugging Face](https://huggingface.co/Supertone/supertonic-2) on first use (~268 MB).
+No manual setup required. Models are downloaded from [Hugging Face](https://huggingface.co/Supertone/supertonic-2) on first use (~268 MB).
 
 ```dart
 // Just initialize — models download automatically if not found
@@ -68,7 +88,7 @@ if (!await SupertonicTTS.modelsReady()) {
 
 ### Option B: Bundle Assets Manually
 
-Download model files from [Hugging Face](https://huggingface.co/Supertone/supertonic-2) and add them to your app's assets directory. This avoids runtime downloads but increases app size by ~268 MB.
+Download the model files from [Hugging Face](https://huggingface.co/Supertone/supertonic-2) and add them to your app's assets. This avoids runtime downloads but increases app size by ~268 MB.
 
 ```
 assets/
@@ -95,11 +115,11 @@ flutter:
 
 ### Platform Configuration
 
-This package uses `flutter_onnxruntime` which requires specific platform configurations:
+This package uses `flutter_onnxruntime`, which needs a few platform-specific settings:
 
 #### ➡️ Android
 
-Add ProGuard rules to prevent ONNX Runtime classes from being obfuscated.
+Add a ProGuard rule so ONNX Runtime classes are not obfuscated.
 
 Create or edit `android/app/proguard-rules.pro`:
 
@@ -113,11 +133,11 @@ Or run this command from your terminal:
 echo "-keep class ai.onnxruntime.** { *; }" > android/app/proguard-rules.pro
 ```
 
-For more information, refer to the [flutter_onnxruntime troubleshooting guide](https://github.com/innovation-engineering/flutter_onnxruntime/blob/main/README.md#troubleshooting).
+See the [flutter_onnxruntime troubleshooting guide](https://github.com/innovation-engineering/flutter_onnxruntime/blob/main/README.md#troubleshooting) for more details.
 
 #### ➡️ iOS
 
-ONNX Runtime requires minimum version iOS 16 and static linkage.
+ONNX Runtime requires iOS 16+ and static linkage.
 
 In `ios/Podfile`, update the following lines:
 
@@ -148,7 +168,7 @@ end
 
 #### ➡️ macOS
 
-macOS build requires minimum version macOS 14.
+macOS builds require macOS 14+.
 
 In `macos/Podfile`, change:
 
@@ -187,16 +207,16 @@ end
 
 <img src="https://github.com/YofarDev/supertonic_flutter/blob/main/example/screen.png?raw=true" alt="Supertonic Flutter Demo" width="300"/>
 
-> Check out the `example/` directory for a full-featured demo app with language selection, voice switching, and customizable settings.
+> See `example/` for a demo app with language selection, voice switching, and adjustable settings.
 
-## Usage
+## More Examples
 
 ### Basic Example
 
 ```dart
 import 'package:supertonic_flutter/supertonic_flutter.dart';
 
-// Initialize the TTS engine
+// Initialize
 final tts = SupertonicTTS();
 await tts.initialize();
 
