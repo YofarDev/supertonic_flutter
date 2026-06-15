@@ -5,7 +5,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart';
 
 const String _hfBase =
-    'https://huggingface.co/Supertone/supertonic-2/resolve/main';
+    'https://huggingface.co/Supertone/supertonic-3/resolve/main';
 
 const List<String> _onnxFiles = [
   'onnx/duration_predictor.onnx',
@@ -57,7 +57,9 @@ class ModelDownloader {
 
   static final ModelDownloader instance = ModelDownloader._();
 
-  static const String _modelDirName = 'supertonic_models';
+  // Versioned so a model bump (e.g. v2 -> v3) always re-downloads fresh
+  // assets instead of reusing a stale, same-named cache.
+  static const String _modelDirName = 'supertonic_models_v3';
   static const Duration _connectTimeout = Duration(seconds: 15);
   static const Duration _sendTimeout = Duration(seconds: 15);
   static const Duration _receiveTimeout = Duration(minutes: 5);

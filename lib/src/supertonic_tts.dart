@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
 
@@ -98,7 +99,8 @@ const Map<int, List<int>> _latinDecompositions = {
 };
 
 /// Decompose a Hangul syllable into Jamo (NFKD-like decomposition)
-List<int> _decomposeHangulSyllable(int codePoint) {
+@visibleForTesting
+List<int> decomposeHangulSyllable(int codePoint) {
   if (codePoint < _hangulSyllableBase || codePoint > _hangulSyllableEnd) {
     return [codePoint];
   }
@@ -122,11 +124,12 @@ List<int> _decomposeHangulSyllable(int codePoint) {
 }
 
 /// Apply NFKD-like decomposition (Hangul + Latin accented characters)
-String _applyNfkdDecomposition(String text) {
+@visibleForTesting
+String applyNfkdDecomposition(String text) {
   final result = <int>[];
   for (final codePoint in text.runes) {
     if (codePoint >= _hangulSyllableBase && codePoint <= _hangulSyllableEnd) {
-      result.addAll(_decomposeHangulSyllable(codePoint));
+      result.addAll(decomposeHangulSyllable(codePoint));
     } else if (_latinDecompositions.containsKey(codePoint)) {
       result.addAll(_latinDecompositions[codePoint]!);
     } else {
@@ -137,8 +140,9 @@ String _applyNfkdDecomposition(String text) {
 }
 
 /// Preprocess text for TTS
-String _preprocessText(String text, String lang) {
-  text = _applyNfkdDecomposition(text);
+@visibleForTesting
+String preprocessText(String text, String lang) {
+  text = applyNfkdDecomposition(text);
 
   // Remove emojis
   text = text.replaceAll(
@@ -249,7 +253,7 @@ class _UnicodeProcessor {
   Map<String, dynamic> call(List<String> textList, List<String> langList) {
     final processedTexts = <String>[];
     for (var i = 0; i < textList.length; i++) {
-      processedTexts.add(_preprocessText(textList[i], langList[i]));
+      processedTexts.add(preprocessText(textList[i], langList[i]));
     }
 
     final lengths = processedTexts.map((t) => t.runes.length).toList();
@@ -450,12 +454,9 @@ class SupertonicTTS {
   /// The [text] parameter can be any length. Long text is automatically chunked
   /// and synthesized in segments with optional silence between chunks.
   ///
-  /// The [language] parameter must be one of the supported language codes:
-  /// - 'en' - English
-  /// - 'ko' - Korean
-  /// - 'es' - Spanish
-  /// - 'pt' - Portuguese
-  /// - 'fr' - French
+  /// The [language] parameter must be one of the 31 supported language codes
+  /// (e.g. 'en', 'ko', 'ja', 'de', 'fr'). See [TTSLanguage.all] for the full
+  /// list.
   ///
   /// The [voiceStyle] parameter selects one of the 10 available voices:
   /// - Male: 'M1', 'M2', 'M3', 'M4', 'M5'
@@ -519,7 +520,7 @@ class SupertonicTTS {
     final style = await _loadStyle(voiceStyle ?? 'M1');
 
     final maxLen = language == 'ko' ? 120 : 300;
-    final chunks = _chunkText(text, maxLen: maxLen);
+    final chunks = chunkText(text, maxLen: maxLen);
     final langList = List.filled(chunks.length, language);
     List<double>? wavCat;
     double durCat = 0;
@@ -744,7 +745,8 @@ class SupertonicTTS {
         .toList();
   }
 
-  List<String> _chunkText(String text, {int maxLen = 300}) {
+  @visibleForTesting
+  List<String> chunkText(String text, {int maxLen = 300}) {
     final paragraphs = text
         .trim()
         .split(RegExp(r'\n\s*\n+'))

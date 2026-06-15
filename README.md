@@ -4,9 +4,11 @@ Multilingual text-to-speech (TTS) for Flutter. Powered by ONNX Runtime for fast 
 
 > **Note:** This is an unofficial Flutter port of the [Supertonic](https://github.com/supertone-inc/supertonic) project.
 
+> **v2.0.0 — Supertonic 3:** Upgraded to [Supertonic 3](https://huggingface.co/Supertone/supertonic-3) (5 → 31 languages). This is a **breaking** change: the model cache is versioned, so apps re-download the new ~400 MB assets on first run. The old Supertonic 2 cache is left untouched.
+
 ## Features
 
-- 🌍 **Multilingual Support** - English, Korean, Spanish, Portuguese, and French
+- 🌍 **Multilingual Support** - 31 languages (English, Korean, Japanese, Spanish, Portuguese, French, German, and 24 more)
 - 🎭 **Multiple Voice Styles** - 10 voices (5 male, 5 female)
 - ⚡ **Local Processing** - Runs fully on-device
 - 🎛️ **Customizable** - Adjustable speech speed and quality settings
@@ -39,7 +41,7 @@ Add this to `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  supertonic_flutter: ^1.0.0
+  supertonic_flutter: ^2.0.0
 ```
 
 ## Quick Start
@@ -66,7 +68,7 @@ final result = await tts.synthesize(
 
 ### Option A: Auto-Download (Recommended)
 
-No manual setup required. Models are downloaded from [Hugging Face](https://huggingface.co/Supertone/supertonic-2) on first use (~268 MB).
+No manual setup required. Models are downloaded from [Hugging Face](https://huggingface.co/Supertone/supertonic-3) on first use (~400 MB).
 
 ```dart
 // Just initialize — models download automatically if not found
@@ -88,7 +90,7 @@ if (!await SupertonicTTS.modelsReady()) {
 
 ### Option B: Bundle Assets Manually
 
-Download the model files from [Hugging Face](https://huggingface.co/Supertone/supertonic-2) and add them to your app's assets. This avoids runtime downloads but increases app size by ~268 MB.
+Download the model files from [Hugging Face](https://huggingface.co/Supertone/supertonic-3) and add them to your app's assets. This avoids runtime downloads but increases app size by ~400 MB.
 
 ```
 assets/

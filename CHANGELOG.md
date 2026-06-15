@@ -1,3 +1,13 @@
+## 2.0.0
+
+**Breaking** — upgraded to [Supertonic 3](https://huggingface.co/Supertone/supertonic-3).
+
+- Language support expanded from 5 to **31 languages** (English, Korean, Japanese, Spanish, Portuguese, French, German, Italian, Dutch, Russian, Ukrainian, Polish, Czech, Slovak, Croatian, Slovenian, Bulgarian, Romanian, Hungarian, Greek, Swedish, Danish, Finnish, Estonian, Latvian, Lithuanian, Turkish, Arabic, Hindi, Indonesian, Vietnamese)
+- Model assets now downloaded from `Supertone/supertonic-3` (~400 MB)
+- Versioned model cache (`supertonic_models_v3`): existing Supertonic 2 caches are orphaned and the new model is re-downloaded on first run, preventing silent stale-model loads
+- Example app: flags added for all 31 languages
+- Maintenance: Flutter migrator gradle flags applied
+
 ## 1.0.0
 
 - Auto-download model files from HuggingFace when not bundled as assets

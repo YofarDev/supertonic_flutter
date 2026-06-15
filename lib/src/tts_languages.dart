@@ -1,21 +1,13 @@
 /// Supported languages for text-to-speech synthesis.
 ///
-/// Supertonic TTS supports 5 languages with native pronunciation and proper
-/// accent handling for each language.
-///
-/// Supported languages:
-/// - English (en) - Standard American English
-/// - Korean (ko) - Native Korean with Hangul support
-/// - Spanish (es) - Standard Spanish with accent handling
-/// - Portuguese (pt) - Brazilian Portuguese with accent support
-/// - French (fr) - Standard French with comprehensive accents
+/// Supertonic 3 supports **31 languages** with native pronunciation.
 ///
 /// Example:
 /// ```dart
 /// // Get language info
-/// final lang = TTSLanguage.fromCode('en');
-/// print(lang.name);       // 'English'
-/// print(lang.nativeName); // 'English'
+/// final lang = TTSLanguage.fromCode('de');
+/// print(lang.name);       // 'German'
+/// print(lang.nativeName); // 'Deutsch'
 ///
 /// // List all languages
 /// for (final lang in TTSLanguage.all) {
@@ -36,89 +28,170 @@ class TTSLanguage {
     required this.nativeName,
   });
 
-  /// English language - Standard American English pronunciation.
-  ///
-  /// Code: `en`
-  ///
-  /// Example:
-  /// ```dart
-  /// await tts.synthesize('Hello, world!', language: 'en');
-  /// ```
+  /// English language. Code: `en`
   static const english =
       TTSLanguage(code: 'en', name: 'English', nativeName: 'English');
 
-  /// Korean language - Native Korean with Hangul Jamo decomposition.
-  ///
-  /// Code: `ko`
-  ///
-  /// Supports proper Korean pronunciation through Hangul syllable decomposition.
-  ///
-  /// Example:
-  /// ```dart
-  /// await tts.synthesize('안녕하세요', language: 'ko');
-  /// ```
+  /// Korean language with Hangul Jamo decomposition. Code: `ko`
   static const korean =
       TTSLanguage(code: 'ko', name: 'Korean', nativeName: '한국어');
 
-  /// Spanish language - Standard Spanish with accent handling.
-  ///
-  /// Code: `es`
-  ///
-  /// Handles accented characters: á, é, í, ó, ú, ñ, ü
-  ///
-  /// Example:
-  /// ```dart
-  /// await tts.synthesize('¡Hola, mundo!', language: 'es');
-  /// ```
+  /// Japanese language. Code: `ja`
+  static const japanese =
+      TTSLanguage(code: 'ja', name: 'Japanese', nativeName: '日本語');
+
+  /// Spanish language with accent handling. Code: `es`
   static const spanish =
       TTSLanguage(code: 'es', name: 'Spanish', nativeName: 'Español');
 
-  /// Portuguese language - Brazilian Portuguese with accent support.
-  ///
-  /// Code: `pt`
-  ///
-  /// Handles accented characters: ã, õ, ç, á, é, í, ó, ú
-  ///
-  /// Example:
-  /// ```dart
-  /// await tts.synthesize('Olá, mundo!', language: 'pt');
-  /// ```
+  /// Portuguese language (Brazilian). Code: `pt`
   static const portuguese =
       TTSLanguage(code: 'pt', name: 'Portuguese', nativeName: 'Português');
 
-  /// French language - Standard French with comprehensive accentuation.
-  ///
-  /// Code: `fr`
-  ///
-  /// Handles all French accents: é, è, ê, à, ù, ç, etc.
-  ///
-  /// Example:
-  /// ```dart
-  /// await tts.synthesize('Bonjour, le monde!', language: 'fr');
-  /// ```
+  /// French language. Code: `fr`
   static const french =
       TTSLanguage(code: 'fr', name: 'French', nativeName: 'Français');
 
-  /// List of all supported languages.
+  /// German language. Code: `de`
+  static const german =
+      TTSLanguage(code: 'de', name: 'German', nativeName: 'Deutsch');
+
+  /// Italian language. Code: `it`
+  static const italian =
+      TTSLanguage(code: 'it', name: 'Italian', nativeName: 'Italiano');
+
+  /// Dutch language. Code: `nl`
+  static const dutch =
+      TTSLanguage(code: 'nl', name: 'Dutch', nativeName: 'Nederlands');
+
+  /// Russian language. Code: `ru`
+  static const russian =
+      TTSLanguage(code: 'ru', name: 'Russian', nativeName: 'Русский');
+
+  /// Ukrainian language. Code: `uk`
+  static const ukrainian =
+      TTSLanguage(code: 'uk', name: 'Ukrainian', nativeName: 'Українська');
+
+  /// Polish language. Code: `pl`
+  static const polish =
+      TTSLanguage(code: 'pl', name: 'Polish', nativeName: 'Polski');
+
+  /// Czech language. Code: `cs`
+  static const czech =
+      TTSLanguage(code: 'cs', name: 'Czech', nativeName: 'Čeština');
+
+  /// Slovak language. Code: `sk`
+  static const slovak =
+      TTSLanguage(code: 'sk', name: 'Slovak', nativeName: 'Slovenčina');
+
+  /// Croatian language. Code: `hr`
+  static const croatian =
+      TTSLanguage(code: 'hr', name: 'Croatian', nativeName: 'Hrvatski');
+
+  /// Slovenian language. Code: `sl`
+  static const slovenian =
+      TTSLanguage(code: 'sl', name: 'Slovenian', nativeName: 'Slovenščina');
+
+  /// Bulgarian language. Code: `bg`
+  static const bulgarian =
+      TTSLanguage(code: 'bg', name: 'Bulgarian', nativeName: 'Български');
+
+  /// Romanian language. Code: `ro`
+  static const romanian =
+      TTSLanguage(code: 'ro', name: 'Romanian', nativeName: 'Română');
+
+  /// Hungarian language. Code: `hu`
+  static const hungarian =
+      TTSLanguage(code: 'hu', name: 'Hungarian', nativeName: 'Magyar');
+
+  /// Greek language. Code: `el`
+  static const greek =
+      TTSLanguage(code: 'el', name: 'Greek', nativeName: 'Ελληνικά');
+
+  /// Swedish language. Code: `sv`
+  static const swedish =
+      TTSLanguage(code: 'sv', name: 'Swedish', nativeName: 'Svenska');
+
+  /// Danish language. Code: `da`
+  static const danish =
+      TTSLanguage(code: 'da', name: 'Danish', nativeName: 'Dansk');
+
+  /// Finnish language. Code: `fi`
+  static const finnish =
+      TTSLanguage(code: 'fi', name: 'Finnish', nativeName: 'Suomi');
+
+  /// Estonian language. Code: `et`
+  static const estonian =
+      TTSLanguage(code: 'et', name: 'Estonian', nativeName: 'Eesti');
+
+  /// Latvian language. Code: `lv`
+  static const latvian =
+      TTSLanguage(code: 'lv', name: 'Latvian', nativeName: 'Latviešu');
+
+  /// Lithuanian language. Code: `lt`
+  static const lithuanian =
+      TTSLanguage(code: 'lt', name: 'Lithuanian', nativeName: 'Lietuvių');
+
+  /// Turkish language. Code: `tr`
+  static const turkish =
+      TTSLanguage(code: 'tr', name: 'Turkish', nativeName: 'Türkçe');
+
+  /// Arabic language. Code: `ar`
+  static const arabic =
+      TTSLanguage(code: 'ar', name: 'Arabic', nativeName: 'العربية');
+
+  /// Hindi language. Code: `hi`
+  static const hindi =
+      TTSLanguage(code: 'hi', name: 'Hindi', nativeName: 'हिन्दी');
+
+  /// Indonesian language. Code: `id`
+  static const indonesian =
+      TTSLanguage(code: 'id', name: 'Indonesian', nativeName: 'Indonesia');
+
+  /// Vietnamese language. Code: `vi`
+  static const vietnamese =
+      TTSLanguage(code: 'vi', name: 'Vietnamese', nativeName: 'Tiếng Việt');
+
+  /// List of all 31 supported languages.
   ///
   /// Example:
   /// ```dart
   /// for (final lang in TTSLanguage.all) {
   ///   print('${lang.code}: ${lang.nativeName}');
   /// }
-  /// // Output:
-  /// // en: English
-  /// // ko: 한국어
-  /// // es: Español
-  /// // pt: Português
-  /// // fr: Français
   /// ```
   static const all = [
     english,
     korean,
+    japanese,
     spanish,
     portuguese,
     french,
+    german,
+    italian,
+    dutch,
+    russian,
+    ukrainian,
+    polish,
+    czech,
+    slovak,
+    croatian,
+    slovenian,
+    bulgarian,
+    romanian,
+    hungarian,
+    greek,
+    swedish,
+    danish,
+    finnish,
+    estonian,
+    latvian,
+    lithuanian,
+    turkish,
+    arabic,
+    hindi,
+    indonesian,
+    vietnamese,
   ];
 
   /// Retrieves a language by its code.
@@ -127,15 +200,9 @@ class TTSLanguage {
   ///
   /// Example:
   /// ```dart
-  /// final lang = TTSLanguage.fromCode('es');
-  /// print(lang.nativeName); // 'Español'
-  ///
-  /// // Invalid code returns default (English)
-  /// final invalid = TTSLanguage.fromCode('de');
-  /// print(invalid.code); // 'en'
+  /// final lang = TTSLanguage.fromCode('de');
+  /// print(lang.nativeName); // 'Deutsch'
   /// ```
-  ///
-  /// Available codes: 'en', 'ko', 'es', 'pt', 'fr'
   static TTSLanguage fromCode(String code) {
     return all.firstWhere(
       (lang) => lang.code == code,
@@ -187,8 +254,6 @@ class TTSTestStrings {
   /// final text = TTSTestStrings.forLanguage('en');
   /// // "Hello, this is a test of the Supertonic text-to-speech system..."
   /// ```
-  ///
-  /// Supported codes: 'en', 'ko', 'es', 'pt', 'fr'
   static String forLanguage(String langCode) {
     return _strings[langCode] ?? _strings['en']!;
   }
@@ -196,9 +261,35 @@ class TTSTestStrings {
   static const Map<String, String> _shortStrings = {
     'en': 'Hello, this is a test.',
     'ko': '안녕하세요, 이것은 테스트입니다.',
+    'ja': 'こんにちは、これはテストです。',
     'es': 'Hola, esta es una prueba.',
     'pt': 'Olá, este é um teste.',
     'fr': 'Bonjour, ceci est un test.',
+    'de': 'Hallo, dies ist ein Test.',
+    'it': 'Ciao, questo è un test.',
+    'nl': 'Hallo, dit is een test.',
+    'ru': 'Здравствуйте, это тест.',
+    'uk': 'Привіт, це тест.',
+    'pl': 'Cześć, to jest test.',
+    'cs': 'Ahoj, toto je test.',
+    'sk': 'Ahoj, toto je test.',
+    'hr': 'Bok, ovo je test.',
+    'sl': 'Živjo, to je test.',
+    'bg': 'Здравейте, това е тест.',
+    'ro': 'Salut, acesta este un test.',
+    'hu': 'Szia, ez egy teszt.',
+    'el': 'Γεια σας, αυτό είναι ένα τεστ.',
+    'sv': 'Hej, detta är ett test.',
+    'da': 'Hej, dette er en test.',
+    'fi': 'Hei, tämä on testi.',
+    'et': 'Tere, see on test.',
+    'lv': 'Sveiki, tas ir tests.',
+    'lt': 'Sveiki, tai yra testas.',
+    'tr': 'Merhaba, bu bir testtir.',
+    'ar': 'مرحبًا، هذا اختبار.',
+    'hi': 'नमस्ते, यह एक परीक्षण है।',
+    'id': 'Halo, ini adalah sebuah tes.',
+    'vi': 'Xin chào, đây là một bài kiểm tra.',
   };
 
   /// Gets a short test string for the specified language.
@@ -211,15 +302,7 @@ class TTSTestStrings {
   /// ```dart
   /// final text = TTSTestStrings.shortForLanguage('ko');
   /// // "안녕하세요, 이것은 테스트입니다."
-  ///
-  /// // Use in a quick test
-  /// await tts.synthesize(
-  ///   TTSTestStrings.shortForLanguage('es'),
-  ///   language: 'es',
-  /// );
   /// ```
-  ///
-  /// Supported codes: 'en', 'ko', 'es', 'pt', 'fr'
   static String shortForLanguage(String langCode) {
     return _shortStrings[langCode] ?? _shortStrings['en']!;
   }
