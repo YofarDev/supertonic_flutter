@@ -1,3 +1,7 @@
+## Unreleased
+
+- Fix: `chunkText()` only recognized ASCII `.`/`!`/`?` as sentence-enders, so text in scripts using other sentence-ending punctuation (e.g. Hindi's Devanagari danda `।`/`॥`, CJK fullwidth `。！？`, Arabic `؟`) was treated as one unbounded "sentence" with no `maxLen` cap enforced — causing synthesis failures on long text and inconsistent speech pacing. `chunkText()` now recognizes these scripts' punctuation and falls back to word-then-character-level splitting for any sentence still exceeding `maxLen` (a safety net that previously didn't exist at all).
+
 ## 2.0.0
 
 **Breaking** — upgraded to [Supertonic 3](https://huggingface.co/Supertone/supertonic-3).
