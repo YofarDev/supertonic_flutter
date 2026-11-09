@@ -110,6 +110,60 @@ void main() {
       final chunks = tts.chunkText('   \n\n   ');
       expect(chunks, isEmpty);
     });
+
+    test('splits Hindi text on danda (।) instead of treating it as one unbounded sentence', () {
+      const sentence =
+          'यह एक लंबा हिंदी वाक्य है जो परीक्षण के लिए बार-बार दोहराया जाता है';
+      final paragraph = '${List.filled(6, sentence).join('। ')}।';
+
+      final chunks = tts.chunkText(paragraph, maxLen: 300);
+
+      expect(chunks.length, greaterThan(1));
+      for (final chunk in chunks) {
+        expect(chunk.length, lessThanOrEqualTo(300));
+      }
+    });
+
+    test('splits CJK fullwidth-punctuated text correctly', () {
+      const sentence = 'これはテストのための長い日本語の文章です';
+      final paragraph = '${List.filled(6, sentence).join('。')}。';
+
+      final chunks = tts.chunkText(paragraph, maxLen: 120);
+
+      expect(chunks.length, greaterThan(1));
+      for (final chunk in chunks) {
+        expect(chunk.length, lessThanOrEqualTo(120));
+      }
+    });
+
+    test('splits Arabic question-mark-punctuated text correctly', () {
+      const sentence = 'هل هذه جملة طويلة لأغراض الاختبار فقط';
+      final paragraph = '${List.filled(6, sentence).join('؟ ')}؟';
+
+      final chunks = tts.chunkText(paragraph, maxLen: 150);
+
+      expect(chunks.length, greaterThan(1));
+      for (final chunk in chunks) {
+        expect(chunk.length, lessThanOrEqualTo(150));
+      }
+    });
+
+    test('hard-caps a single sentence that exceeds maxLen with no recognized punctuation at all', () {
+      final noPunctuationOrSpaces = 'अ' * 1000;
+
+      final chunks = tts.chunkText(noPunctuationOrSpaces, maxLen: 300);
+
+      expect(chunks, isNotEmpty);
+      for (final chunk in chunks) {
+        expect(chunk.length, lessThanOrEqualTo(300));
+      }
+      expect(chunks.join('').length, 1000);
+    });
+
+    test('still respects the Mr./Dr. abbreviation lookbehind for English', () {
+      final chunks = tts.chunkText('Dr. Smith arrived. He was late.');
+      expect(chunks.any((c) => c.trim() == 'Dr'), isFalse);
+    });
   });
 
   group('decomposeHangulSyllable', () {

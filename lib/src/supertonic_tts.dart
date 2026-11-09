@@ -745,6 +745,56 @@ class SupertonicTTS {
         .toList();
   }
 
+  /// Sentence-end punctuation covering ASCII plus common non-Latin scripts:
+  /// Devanagari danda/double-danda (।॥), CJK fullwidth stop/marks (。！？),
+  /// and Arabic question mark (؟). Without these, text in scripts that don't
+  /// use ASCII `.`/`!`/`?` (e.g. Hindi, which uses danda instead of periods)
+  /// gets treated as one unbounded "sentence" by this splitter, bypassing
+  /// the [maxLen] cap entirely.
+  static final RegExp _sentenceSplitRegex = RegExp(
+    r'(?<!Mr\.|Mrs\.|Ms\.|Dr\.|Prof\.)(?<!\b[A-Z]\.)(?<=[.!?।॥。！？؟])\s+',
+  );
+
+  /// Splits a single over-long "sentence" (no recognized sentence-ending
+  /// punctuation within [maxLen] chars) on whitespace, packing words up to
+  /// [maxLen]. Falls back to a hard character-count slice if a single word
+  /// itself exceeds [maxLen] (e.g. scripts with no spaces at all) — this is
+  /// the safety net [chunkText] previously lacked: a "sentence" longer than
+  /// [maxLen] used to become its own unbounded chunk with no further split.
+  List<String> _splitOversizedPiece(String piece, int maxLen) {
+    if (piece.length <= maxLen) return [piece];
+
+    final words = piece.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+    final result = <String>[];
+    var current = '';
+
+    void flush() {
+      if (current.isNotEmpty) {
+        result.add(current);
+        current = '';
+      }
+    }
+
+    for (final word in words) {
+      if (word.length > maxLen) {
+        flush();
+        for (var i = 0; i < word.length; i += maxLen) {
+          result.add(word.substring(i, math.min(i + maxLen, word.length)));
+        }
+        continue;
+      }
+      final candidate = current.isEmpty ? word : '$current $word';
+      if (candidate.length <= maxLen) {
+        current = candidate;
+      } else {
+        flush();
+        current = word;
+      }
+    }
+    flush();
+    return result;
+  }
+
   @visibleForTesting
   List<String> chunkText(String text, {int maxLen = 300}) {
     final paragraphs = text
@@ -758,16 +808,17 @@ class SupertonicTTS {
       paragraph = paragraph.trim();
       if (paragraph.isEmpty) continue;
 
-      final sentences = paragraph.split(RegExp(
-          r'(?<!Mr\.|Mrs\.|Ms\.|Dr\.|Prof\.)(?<!\b[A-Z]\.)(?<=[.!?])\s+'));
+      final sentences = paragraph.split(_sentenceSplitRegex);
 
       var currentChunk = '';
       for (final sentence in sentences) {
-        if (currentChunk.length + sentence.length + 1 <= maxLen) {
-          currentChunk += (currentChunk.isNotEmpty ? ' ' : '') + sentence;
-        } else {
-          if (currentChunk.isNotEmpty) chunks.add(currentChunk.trim());
-          currentChunk = sentence;
+        for (final piece in _splitOversizedPiece(sentence, maxLen)) {
+          if (currentChunk.length + piece.length + 1 <= maxLen) {
+            currentChunk += (currentChunk.isNotEmpty ? ' ' : '') + piece;
+          } else {
+            if (currentChunk.isNotEmpty) chunks.add(currentChunk.trim());
+            currentChunk = piece;
+          }
         }
       }
       if (currentChunk.isNotEmpty) chunks.add(currentChunk.trim());
