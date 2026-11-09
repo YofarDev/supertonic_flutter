@@ -62,7 +62,7 @@ class TTSAudioPlayer {
     }
 
     // Keep playback in-memory so it works across native and web platforms.
-    await _player.play(BytesSource(result.toWavBytes()));
+    await _player.play(BytesSource(result.toWavBytes(), mimeType: 'audio/wav'));
   }
 
   /// Stops playback and resets the player to the beginning.

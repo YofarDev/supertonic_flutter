@@ -7,7 +7,7 @@ issue_tracker: https://github.com/YofarDev/supertonic_flutter/issues
 
 environment:
   sdk: ^3.5.0
-  flutter: '>=3.24.0'
+  flutter: ">=3.24.0"
 
 dependencies:
   flutter:
@@ -16,7 +16,7 @@ dependencies:
     sdk: flutter
   plugin_platform_interface: ^2.1.0
   flutter_onnxruntime: ^1.6.0
-  audioplayers: ^6.6.0
+  audioplayers: ^6.7.1
   logger: ^2.0.2
   dio: ^5.9.2
   path_provider: ^2.1.5
