@@ -111,7 +111,9 @@ void main() {
       expect(chunks, isEmpty);
     });
 
-    test('splits Hindi text on danda (।) instead of treating it as one unbounded sentence', () {
+    test(
+        'splits Hindi text on danda (।) instead of treating it as one unbounded sentence',
+        () {
       const sentence =
           'यह एक लंबा हिंदी वाक्य है जो परीक्षण के लिए बार-बार दोहराया जाता है';
       final paragraph = '${List.filled(6, sentence).join('। ')}।';
@@ -136,6 +138,31 @@ void main() {
       }
     });
 
+    test('splits Japanese at 。 even without a following space', () {
+      final chunks = tts.chunkText('おはよう。こんにちは。さようなら。', maxLen: 10);
+
+      expect(chunks.length, 3);
+      expect(chunks[0], 'おはよう。');
+      expect(chunks[1], 'こんにちは。');
+      expect(chunks[2], 'さようなら。');
+    });
+
+    test('splits Hindi at danda (।) even without a following space', () {
+      final chunks =
+          tts.chunkText('यह पहला वाक्य है।यह दूसरा वाक्य है।', maxLen: 20);
+
+      expect(chunks.length, 2);
+      expect(chunks[0], 'यह पहला वाक्य है।');
+      expect(chunks[1], 'यह दूसरा वाक्य है।');
+    });
+
+    test('does not split ASCII punctuation zero-width (decimals stay intact)',
+        () {
+      final chunks = tts.chunkText('Pi is 3.14 rounded. Euler is 2.72.');
+
+      expect(chunks, ['Pi is 3.14 rounded. Euler is 2.72.']);
+    });
+
     test('splits Arabic question-mark-punctuated text correctly', () {
       const sentence = 'هل هذه جملة طويلة لأغراض الاختبار فقط';
       final paragraph = '${List.filled(6, sentence).join('؟ ')}؟';
@@ -148,7 +175,9 @@ void main() {
       }
     });
 
-    test('hard-caps a single sentence that exceeds maxLen with no recognized punctuation at all', () {
+    test(
+        'hard-caps a single sentence that exceeds maxLen with no recognized punctuation at all',
+        () {
       final noPunctuationOrSpaces = 'अ' * 1000;
 
       final chunks = tts.chunkText(noPunctuationOrSpaces, maxLen: 300);
@@ -276,6 +305,21 @@ void main() {
     test('does not add period for exclamation mark', () {
       final result = preprocessText('Hello!', 'en');
       expect(result, contains('Hello!'));
+    });
+
+    test('does not add period after Devanagari danda (।)', () {
+      final result = preprocessText('यह एक वाक्य है।', 'hi');
+      expect(result, isNot(contains('।.')));
+    });
+
+    test('does not add period after Arabic question mark (؟)', () {
+      final result = preprocessText('هل هذا اختبار؟', 'ar');
+      expect(result, isNot(contains('؟.')));
+    });
+
+    test('does not add period after fullwidth exclamation (！)', () {
+      final result = preprocessText('こんにちは！', 'ja');
+      expect(result, isNot(contains('！.')));
     });
 
     test('removes emojis', () {

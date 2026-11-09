@@ -3,13 +3,25 @@ import 'package:supertonic_flutter/src/tts_languages.dart';
 
 void main() {
   group('TTSLanguage', () {
-    test('all contains exactly 5 languages', () {
-      expect(TTSLanguage.all.length, 5);
+    test('all contains 31 languages plus language-agnostic mode', () {
+      expect(TTSLanguage.all.length, 32);
     });
 
     test('all has expected language codes', () {
       final codes = TTSLanguage.all.map((l) => l.code).toList();
-      expect(codes, containsAll(['en', 'ko', 'es', 'pt', 'fr']));
+      expect(
+        codes,
+        containsAll([
+          'en', 'ko', 'ja', 'ar', 'bg', 'cs', 'da', 'de', 'el', 'es', 'et', //
+          'fi', 'fr', 'hi', 'hr', 'hu', 'id', 'it', 'lt', 'lv', 'nl', 'pl',
+          'pt', 'ro', 'ru', 'sk', 'sl', 'sv', 'tr', 'uk', 'vi', 'na',
+        ]),
+      );
+    });
+
+    test('all has no duplicate codes', () {
+      final codes = TTSLanguage.all.map((l) => l.code).toList();
+      expect(codes.toSet().length, codes.length);
     });
 
     group('static constants', () {
@@ -42,6 +54,24 @@ void main() {
         expect(TTSLanguage.french.name, 'French');
         expect(TTSLanguage.french.nativeName, 'Français');
       });
+
+      test('japanese', () {
+        expect(TTSLanguage.japanese.code, 'ja');
+        expect(TTSLanguage.japanese.name, 'Japanese');
+        expect(TTSLanguage.japanese.nativeName, '日本語');
+      });
+
+      test('german', () {
+        expect(TTSLanguage.german.code, 'de');
+        expect(TTSLanguage.german.name, 'German');
+        expect(TTSLanguage.german.nativeName, 'Deutsch');
+      });
+
+      test('languageAgnostic', () {
+        expect(TTSLanguage.languageAgnostic.code, 'na');
+        expect(TTSLanguage.languageAgnostic.name, 'Language-agnostic');
+        expect(TTSLanguage.languageAgnostic.nativeName, 'Auto');
+      });
     });
 
     group('fromCode', () {
@@ -51,10 +81,13 @@ void main() {
         expect(TTSLanguage.fromCode('es'), same(TTSLanguage.spanish));
         expect(TTSLanguage.fromCode('pt'), same(TTSLanguage.portuguese));
         expect(TTSLanguage.fromCode('fr'), same(TTSLanguage.french));
+        expect(TTSLanguage.fromCode('ja'), same(TTSLanguage.japanese));
+        expect(TTSLanguage.fromCode('de'), same(TTSLanguage.german));
+        expect(TTSLanguage.fromCode('na'), same(TTSLanguage.languageAgnostic));
       });
 
       test('returns english for unknown code', () {
-        expect(TTSLanguage.fromCode('de'), same(TTSLanguage.english));
+        expect(TTSLanguage.fromCode('xx'), same(TTSLanguage.english));
         expect(TTSLanguage.fromCode(''), same(TTSLanguage.english));
         expect(TTSLanguage.fromCode('EN'), same(TTSLanguage.english));
       });
@@ -93,11 +126,14 @@ void main() {
         }
       });
 
-      test('short string is shorter than full string', () {
+      test('short string is no longer than full string', () {
+        // Languages without a dedicated full string fall back to the short
+        // string, so the two may be equal.
         for (final lang in TTSLanguage.all) {
           final short = TTSTestStrings.shortForLanguage(lang.code);
           final full = TTSTestStrings.forLanguage(lang.code);
-          expect(short.length, lessThan(full.length), reason: lang.code);
+          expect(short.length, lessThanOrEqualTo(full.length),
+              reason: lang.code);
         }
       });
 

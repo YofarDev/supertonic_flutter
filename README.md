@@ -8,7 +8,8 @@ Multilingual text-to-speech (TTS) for Flutter. Powered by ONNX Runtime for fast 
 
 ## Features
 
-- 🌍 **Multilingual Support** - 31 languages (English, Korean, Japanese, Spanish, Portuguese, French, German, and 24 more)
+- 🌍 **Multilingual Support** - 31 languages (English, Korean, Japanese, Spanish, Portuguese, French, German, and 24 more), plus a language-agnostic mode (`na`) for unknown-language input
+- 😄 **Expression Tags** - Supertonic 3 inline tags such as `<laugh>`, `<breath>`, and `<sigh>` add natural, human-sounding nuance
 - 🎭 **Multiple Voice Styles** - 10 voices (5 male, 5 female)
 - ⚡ **Local Processing** - Runs fully on-device
 - 🎛️ **Customizable** - Adjustable speech speed and quality settings
@@ -41,7 +42,7 @@ Add this to `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  supertonic_flutter: ^2.0.0
+  supertonic_flutter: ^2.1.0
 ```
 
 ## Quick Start
@@ -63,6 +64,30 @@ final result = await tts.synthesize(
 - cached models
 - bundled assets
 - download from Hugging Face if needed
+
+### Expression Tags
+
+Add natural, human-sounding nuance with simple inline tags such as `<laugh>`, `<breath>`, and `<sigh>` — they are passed straight through to the model:
+
+```dart
+final result = await tts.synthesize(
+  'Well <laugh> that was unexpected!',
+  language: 'en',
+  voiceStyle: 'F2',
+);
+```
+
+### Language-Agnostic Mode
+
+Not sure which language your text is in? Pass `language: 'na'` and Supertonic handles the input in a language-agnostic way:
+
+```dart
+final result = await tts.synthesize(
+  'Bonjour and 안녕하세요!',
+  language: 'na',
+  voiceStyle: 'M1',
+);
+```
 
 ## Model Setup
 

@@ -1,6 +1,7 @@
 /// Supported languages for text-to-speech synthesis.
 ///
-/// Supertonic 3 supports **31 languages** with native pronunciation.
+/// Supertonic 3 supports **31 languages** with native pronunciation, plus a
+/// language-agnostic mode (`na`) for input whose language is unknown.
 ///
 /// Example:
 /// ```dart
@@ -152,7 +153,20 @@ class TTSLanguage {
   static const vietnamese =
       TTSLanguage(code: 'vi', name: 'Vietnamese', nativeName: 'Tiếng Việt');
 
-  /// List of all 31 supported languages.
+  /// Language-agnostic mode. Code: `na`
+  ///
+  /// Use this when the language of the input text is unknown — Supertonic
+  /// processes the text without an explicit language tag.
+  ///
+  /// Example:
+  /// ```dart
+  /// await tts.synthesize('Bonjour and 안녕하세요!', language: 'na');
+  /// ```
+  static const languageAgnostic =
+      TTSLanguage(code: 'na', name: 'Language-agnostic', nativeName: 'Auto');
+
+  /// List of all 31 supported languages, plus the language-agnostic mode
+  /// ([languageAgnostic]).
   ///
   /// Example:
   /// ```dart
@@ -192,6 +206,7 @@ class TTSLanguage {
     hindi,
     indonesian,
     vietnamese,
+    languageAgnostic,
   ];
 
   /// Retrieves a language by its code.
@@ -234,6 +249,17 @@ class TTSTestStrings {
     'en':
         'Hello, this is a test of the Supertonic text-to-speech system. The quick brown fox jumps over the lazy dog.',
     'ko': '안녕하세요, 이것은 슈퍼토닉 텍스트 음성 변환 시스템 테스트입니다. 빠른 갈색 여우가 게으른 개를 뛰어넘습니다.',
+    'ja': 'こんにちは、これはスーパートニック音声合成システムのテストです。素早い茶色のキツネがのろまな犬を飛び越えます。',
+    'ar':
+        'مرحباً، هذا اختبار لنظام سوبرتونيك لتحويل النص إلى كلام. الثعلب البني السريع يقفز فوق الكلب الكسول.',
+    'de':
+        'Hallo, dies ist ein Test des Supertonic Sprachsynthese-Systems. Der schnelle braune Fuchs springt über den faulen Hund.',
+    'hi':
+        'नमस्ते, यह सुपरटॉनिक टेक्स्ट-टू-स्पीच प्रणाली का परीक्षण है। तेज़ भूरी लोमड़ी आलसी कुत्ते के ऊपर से कूदती है।',
+    'it':
+        'Ciao, questo è un test del sistema di sintesi vocale Supertonic. La rapida volpe marrone salta sopra il cane pigro.',
+    'ru':
+        'Здравствуйте, это тест системы синтеза речи Супертоник. Быстрая коричневая лиса перепрыгивает через ленивую собаку.',
     'es':
         'Hola, esta es una prueba del sistema de síntesis de voz Supertonic. El rápido zorro marrón salta sobre el perro perezoso.',
     'pt':
@@ -247,7 +273,8 @@ class TTSTestStrings {
   /// Returns a comprehensive test sentence that includes various sounds
   /// and pronunciations specific to each language.
   ///
-  /// If [langCode] is not found, returns the English test string.
+  /// If no full test string exists for [langCode], falls back to the short
+  /// test string, then to the English test string.
   ///
   /// Example:
   /// ```dart
@@ -255,7 +282,7 @@ class TTSTestStrings {
   /// // "Hello, this is a test of the Supertonic text-to-speech system..."
   /// ```
   static String forLanguage(String langCode) {
-    return _strings[langCode] ?? _strings['en']!;
+    return _strings[langCode] ?? _shortStrings[langCode] ?? _strings['en']!;
   }
 
   static const Map<String, String> _shortStrings = {
@@ -290,6 +317,7 @@ class TTSTestStrings {
     'hi': 'नमस्ते, यह एक परीक्षण है।',
     'id': 'Halo, ini adalah sebuah tes.',
     'vi': 'Xin chào, đây là một bài kiểm tra.',
+    'na': 'Hello, this is a test.',
   };
 
   /// Gets a short test string for the specified language.

@@ -212,7 +212,8 @@ String preprocessText(String text, String lang) {
 
   // Add period if needed
   if (text.isNotEmpty &&
-      !RegExp(r'[.!?;:,\x27\x22\u2018\u2019)\]}…。」』】〉》›»]$').hasMatch(text)) {
+      !RegExp(r'[.!?;:,\x27\x22\u2018\u2019)\]}…。」』】〉》›»।॥！？؟]$')
+          .hasMatch(text)) {
     text += '.';
   }
 
@@ -455,8 +456,21 @@ class SupertonicTTS {
   /// and synthesized in segments with optional silence between chunks.
   ///
   /// The [language] parameter must be one of the 31 supported language codes
-  /// (e.g. 'en', 'ko', 'ja', 'de', 'fr'). See [TTSLanguage.all] for the full
-  /// list.
+  /// (e.g. 'en', 'ko', 'ja', 'de', 'fr') — see [TTSLanguage.all] for the full
+  /// list — or `'na'` for language-agnostic synthesis when the input language
+  /// is unknown.
+  ///
+  /// The [text] may contain Supertonic 3 expression tags for natural,
+  /// human-sounding nuance — simple inline tags such as `<laugh>`,
+  /// `<breath>`, and `<sigh>` are passed through to the model verbatim:
+  ///
+  /// ```dart
+  /// await tts.synthesize(
+  ///   'Well <laugh> that was unexpected!',
+  ///   language: 'en',
+  ///   voiceStyle: 'F2',
+  /// );
+  /// ```
   ///
   /// The [voiceStyle] parameter selects one of the 10 available voices:
   /// - Male: 'M1', 'M2', 'M3', 'M4', 'M5'
@@ -519,7 +533,7 @@ class SupertonicTTS {
     final effectiveConfig = config ?? const TTSConfig();
     final style = await _loadStyle(voiceStyle ?? 'M1');
 
-    final maxLen = language == 'ko' ? 120 : 300;
+    final maxLen = (language == 'ko' || language == 'ja') ? 120 : 300;
     final chunks = chunkText(text, maxLen: maxLen);
     final langList = List.filled(chunks.length, language);
     List<double>? wavCat;
@@ -751,8 +765,15 @@ class SupertonicTTS {
   /// use ASCII `.`/`!`/`?` (e.g. Hindi, which uses danda instead of periods)
   /// gets treated as one unbounded "sentence" by this splitter, bypassing
   /// the [maxLen] cap entirely.
+  ///
+  /// Japanese and Hindi typography does not put a space after `。`/`।`, so a
+  /// second alternative splits zero-width after those two marks even without
+  /// following whitespace. This is safe for `。`/`।` specifically — unlike
+  /// the ASCII period they never occur in abbreviations or numbers. The
+  /// ASCII and fullwidth `!`/`?` still require trailing whitespace so runs
+  /// like "What?!" stay packed as one chunk.
   static final RegExp _sentenceSplitRegex = RegExp(
-    r'(?<!Mr\.|Mrs\.|Ms\.|Dr\.|Prof\.)(?<!\b[A-Z]\.)(?<=[.!?।॥。！？؟])\s+',
+    r'(?<!Mr\.|Mrs\.|Ms\.|Dr\.|Prof\.)(?<!\b[A-Z]\.)(?<=[.!?।॥。！？؟])\s+|(?<=[।。])(?=\S)',
   );
 
   /// Splits a single over-long "sentence" (no recognized sentence-ending
@@ -764,7 +785,8 @@ class SupertonicTTS {
   List<String> _splitOversizedPiece(String piece, int maxLen) {
     if (piece.length <= maxLen) return [piece];
 
-    final words = piece.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+    final words =
+        piece.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
     final result = <String>[];
     var current = '';
 

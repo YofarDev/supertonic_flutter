@@ -1,6 +1,13 @@
-## Unreleased
+## 2.1.0
 
-- Fix: `chunkText()` only recognized ASCII `.`/`!`/`?` as sentence-enders, so text in scripts using other sentence-ending punctuation (e.g. Hindi's Devanagari danda `।`/`॥`, CJK fullwidth `。！？`, Arabic `؟`) was treated as one unbounded "sentence" with no `maxLen` cap enforced — causing synthesis failures on long text and inconsistent speech pacing. `chunkText()` now recognizes these scripts' punctuation and falls back to word-then-character-level splitting for any sentence still exceeding `maxLen` (a safety net that previously didn't exist at all).
+- **Fix: non-Latin sentence chunking** (#5, thanks @4-alok) — `chunkText()` only recognized ASCII `.`/`!`/`?` as sentence-enders, so text in scripts using other sentence-ending punctuation (Hindi's Devanagari danda `।`/`॥`, CJK fullwidth `。！？`, Arabic `؟`) was treated as one unbounded "sentence" with no `maxLen` cap enforced — causing synthesis failures on long text and inconsistent speech pacing. Chunking now recognizes these scripts' punctuation and falls back to word-then-character-level splitting for any sentence still exceeding `maxLen` (a safety net that previously didn't exist at all). Japanese and Hindi text also splits at `。`/`।` when no space follows, matching those scripts' typography.
+- **Fix: iOS playback** (#3, thanks @alexrabin) — `TTSAudioPlayer.play()` now passes `mimeType: 'audio/wav'` to `BytesSource` so iOS's AVPlayer can determine the format; previously playback failed on physical devices (the simulator was unaffected). Fixes #2. `audioplayers` bumped to `^6.7.1`.
+- **Language-agnostic mode** — `language: 'na'` lets Supertonic process text whose language is unknown, matching upstream (`TTSLanguage.languageAgnostic`, thanks @alexrabin)
+- Japanese text now uses the same 120-character chunking limit as Korean, matching upstream
+- `preprocessText` no longer appends a spurious ASCII period after `।` `॥` `！` `？` `؟` sentence-enders
+- Documented Supertonic 3 expression tags (`<laugh>`, `<breath>`, `<sigh>`), which pass through to the model verbatim (thanks @alexrabin)
+- `TTSTestStrings`: full test strings for Japanese, Arabic, German, Hindi, Italian, Russian; `forLanguage` now falls back full → short → English instead of jumping straight to English
+- Fixed stale tests still asserting the pre-2.0.0 5-language world
 
 ## 2.0.0
 
